@@ -9,9 +9,12 @@ namespace Player
 {
     public class PlayerInteractor : MonoBehaviour, IInteractor
     {
+        private const float DIACTIVATE_EXCEPTION_TIME = 1.5f;
+
         [Header("UI")] 
         [SerializeField] private Transform _textInteract;
-        
+        [SerializeField] private GameObject _textInteractException;
+
         [Header("Modules")]
         [SerializeField] private InputModule _inputModule;
         [SerializeField] private PlayerController _playerController;
@@ -19,7 +22,9 @@ namespace Player
         private List<IInteractable> _interactableObjects = new List<IInteractable>();
 
         private Coroutine _distanceChecker;
-        
+
+        private bool _isDiactivatingException = false;
+
         private void OnEnable()
         {
             _inputModule.OnInteract += OnInteract;
@@ -54,7 +59,19 @@ namespace Player
 
         public void InteractException()
         {
-            
+            _textInteractException.SetActive(true);
+
+            if (!_isDiactivatingException)
+            {
+                _isDiactivatingException = true;
+                Invoke(nameof(DiactivateException), DIACTIVATE_EXCEPTION_TIME);
+            }
+        }
+
+        private void DiactivateException()
+        {
+            _textInteractException.SetActive(false);
+            _isDiactivatingException = false;
         }
 
         private void OnTriggerEnter2D(Collider2D other)

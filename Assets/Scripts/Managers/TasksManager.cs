@@ -2,6 +2,7 @@
 using Environment;
 using Tasks;
 using Tasks.UI;
+using TMPro;
 using UnityEngine;
 
 namespace Managers
@@ -11,9 +12,11 @@ namespace Managers
         [SerializeField] private ButtonAnswer _buttonSelectAnswer;
         [SerializeField] private Transform _buttonsParent;
         [SerializeField] private GameObject _taskPanel;
-        
+        [SerializeField] private TextMeshProUGUI _textTaskTitle;
+
         private TaskObject _taskObject;
-        
+        private TaskConfig _taskConfig;
+
         public Action OnRightAnswer { get; set; }
         public Action<bool> OnWrongAnswer { get; set; }
         public static Action OnFinishInteract { get; set; }
@@ -31,17 +34,20 @@ namespace Managers
         private void GenerateTask(TaskObject taskObject)
         {
             _taskObject = taskObject;
-            
+            _taskConfig = taskObject.GetTaskConfig;
+
+            _textTaskTitle.text = _taskConfig.GetDescription;
+
             foreach (Transform child in _buttonsParent)
             {
                 Destroy(child.gameObject);
             }
             
-            for (int i = 0; i < _taskObject.GetTaskConfig.GetAnswers.Length; i++)
+            for (int i = 0; i < _taskConfig.GetAnswers.Length; i++)
             {
                 ButtonAnswer button = Instantiate(_buttonSelectAnswer, _buttonsParent);
                 button.transform.gameObject.SetActive(true);
-                button.Initialize(this, i, _taskObject.GetTaskConfig.GetAnswers[i]);
+                button.Initialize(this, i, _taskConfig.GetAnswers[i]);
             }
             
             _taskPanel.SetActive(true);
@@ -49,12 +55,12 @@ namespace Managers
 
         public void SelectAnswer(int answerId)
         {
-            if (_taskObject.GetTaskConfig == null)
+            if (_taskConfig == null)
             {
                 return;
             }
 
-            if (answerId == _taskObject.GetTaskConfig.GetRightAnswerId)
+            if (answerId == _taskConfig.GetRightAnswerId)
             {
                 OnRightAnswer?.Invoke();
                 _taskObject.FinishInteract(true);
